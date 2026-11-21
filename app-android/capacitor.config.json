@@ -1,0 +1,21 @@
+{
+  "appId": "de.musikologin.prinzipal",
+  "appName": "Prinzipal",
+  "webDir": "www",
+  "server": {
+    "url": "https://prinzipal.web.app",
+    "cleartext": false,
+    "allowNavigation": [
+      "prinzipal.web.app",
+      "journal-70fbc.firebaseapp.com"
+    ],
+    "errorPath": "offline.html"
+  },
+  "android": {
+    "backgroundColor": "#333d4a",
+    "allowMixedContent": false,
+    "captureInput": false,
+    "webContentsDebuggingEnabled": false,
+    "adjustMarginsForEdgeToEdge": "disable"
+  }
+}

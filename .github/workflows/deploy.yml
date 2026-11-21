@@ -1,0 +1,31 @@
+name: Auf Firebase veröffentlichen
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["app-android/**", "**.md"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency: veroeffentlichen
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Seite zusammenbauen
+        run: python3 build.py
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/516159234064/locations/global/workloadIdentityPools/github/providers/prinzipal
+          service_account: prinzipal-deploy@journal-70fbc.iam.gserviceaccount.com
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Aktuelle APK für den Download-Link holen
+        run: gcloud storage cp gs://journal-70fbc.firebasestorage.app/sys/android/Prinzipal-aktuell.apk public/Prinzipal.apk
+      - name: Seite veröffentlichen
+        run: |
+          npm i -g firebase-tools@latest > /dev/null 2>&1
+          firebase deploy --only hosting --project journal-70fbc --non-interactive

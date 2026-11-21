@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Prinzipal</string>
+    <string name="title_activity_main">Prinzipal</string>
+    <string name="package_name">de.musikologin.prinzipal</string>
+    <string name="custom_url_scheme">de.musikologin.prinzipal</string>
+    <string name="widget_name">Prinzipal</string>
+    <string name="widget_desc">Übersicht, Geburtstage, Arbeitszeit und schnelle Ablage</string>
+</resources>

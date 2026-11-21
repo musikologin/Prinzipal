@@ -1,0 +1,59 @@
+name: Android-App bauen
+on:
+  push:
+    branches: [main]
+    paths: ["app-android/**", ".github/workflows/apk.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency: veroeffentlichen
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/516159234064/locations/global/workloadIdentityPools/github/providers/prinzipal
+          service_account: prinzipal-deploy@journal-70fbc.iam.gserviceaccount.com
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Signaturschlüssel holen
+        run: |
+          B=gs://journal-70fbc.firebasestorage.app/sys/android
+          gcloud storage cp $B/prinzipal.jks "$RUNNER_TEMP/prinzipal.jks"
+          PW="$(gcloud storage cat $B/prinzipal.pw)"
+          echo "::add-mask::$PW"
+          echo "TW_KEYSTORE=$RUNNER_TEMP/prinzipal.jks" >> "$GITHUB_ENV"
+          echo "TW_KEYSTORE_PW=$PW" >> "$GITHUB_ENV"
+          echo "TW_VERSION_CODE=$((10 + ${{ github.run_number }}))" >> "$GITHUB_ENV"
+      - name: App bauen
+        working-directory: app-android
+        run: |
+          npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+          npx cap sync android
+          cd android && chmod +x gradlew && ./gradlew assembleRelease --no-daemon
+      - name: APK ablegen
+        run: |
+          APK=app-android/android/app/build/outputs/apk/release/app-release.apk
+          B=gs://journal-70fbc.firebasestorage.app/sys/android
+          gcloud storage cp "$APK" "$B/Prinzipal-$TW_VERSION_CODE.apk"
+          gcloud storage cp "$APK" "$B/Prinzipal-aktuell.apk"
+          cp "$APK" public/Prinzipal.apk
+          echo "::notice title=APK::Prinzipal-$TW_VERSION_CODE.apk"
+      - name: Download-Link aktualisieren
+        run: |
+          python3 build.py
+          npm i -g firebase-tools@latest > /dev/null 2>&1
+          firebase deploy --only hosting --project journal-70fbc --non-interactive
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: app-android/android/app/build/outputs/apk/release/*.apk

@@ -1,0 +1,30 @@
+<style id="pzboot">
+/* Nie ein leerer Bildschirm: Hinweis, bis die App gezeichnet hat */
+html:not(.pzup)::before{content:"Prinzipal wird geöffnet …";position:fixed;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;white-space:pre-line;background:#333d4a;color:#f4f2ee;font:600 17px/1.5 system-ui,sans-serif;z-index:2147483000}
+html.pzslow:not(.pzup)::before{content:"Das Öffnen dauert ungewöhnlich lange.\A Antippen lädt neu."}
+</style>
+<script id="pzboot-js">
+(function () {
+  var t0 = Date.now(), done = false;
+  var up = function () { return !!document.querySelector("#main > *") || !!document.getElementById("tw-login"); };
+  var iv = setInterval(function () {
+    if (up()) { done = true; clearInterval(iv); document.documentElement.classList.add("pzup"); return; }
+    if ((Date.now() - t0) / 1000 > 15) document.documentElement.classList.add("pzslow");
+  }, 300);
+  addEventListener("click", function () { if (!done && document.documentElement.classList.contains("pzslow")) location.reload(); }, true);
+})();
+</script>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#333d4a">
+<script>
+/* Zwischenschicht: stellt der App dieselbe Schnittstelle bereit wie die Claude-Umgebung
+   (window.claude.use("db" | "assets" | "mcp" | "downloads" | …)), dahinter Firebase, Google und Todoist.
+   Was es hier noch nicht gibt (sample, dictation), liefert null: die App blendet diese Funktionen dann aus. */
+(function () {
+  var res, rej;
+  var ready = new Promise(function (a, b) { res = a; rej = b; });
+  window.__twReady = { resolve: res, reject: rej, promise: ready };
+  window.claude = { use: function (name) { return ready.then(function (impl) { return impl[name] || null; }); } };
+})();
+</script>
+<script type="module" src="/pz-firebase.js"></script>
