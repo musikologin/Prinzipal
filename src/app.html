@@ -309,10 +309,11 @@ body.k .swpal{background:#120c05}body.k .sw{border-color:#000}
 @keyframes swl{from{transform:translateX(26px);opacity:.4}to{transform:none;opacity:1}}@keyframes swr{from{transform:translateX(-26px);opacity:.4}to{transform:none;opacity:1}}#main.swl .tday,#main.swl .wgrid,#main.swl .mgrid,#main.swl .dayv,#main.swl .wbars{animation:swl .18s ease-out}#main.swr .tday,#main.swr .wgrid,#main.swr .mgrid,#main.swr .dayv,#main.swr .wbars{animation:swr .18s ease-out}@media(prefers-reduced-motion:reduce){#main.swl *,#main.swr *{animation:none!important}}
 .stq{display:block;padding:10px 12px 12px}.stqh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.stqh .lnk{min-height:0;padding:2px 4px;font-size:13.5px}.stqg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.stqg .zc{width:100%;min-width:0;text-align:left;padding-left:10px;padding-right:6px}.stqg .zc span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(min-width:900px){.stqg{grid-template-columns:repeat(6,minmax(0,1fr))}}@media(max-width:350px){.stqg{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .stq{padding:8px 10px 10px}.stqh{margin-bottom:6px}.stql{font-size:13px}.stql .ic{width:16px;height:16px}.stqg{gap:6px}.stqg .zc{min-height:32px;padding-top:4px;padding-bottom:4px;font-size:13.5px;border-radius:8px}
-body.noai [data-act=gAsk],body.noai [data-act=gemaAI],body.noai [data-act=liedAI],body.noai [data-act=pressAI],body.noai [data-act=memoAuto],body.noai [data-act=instr],body.nomic [data-act=micToggle],body.nomic [data-q=sprach],body.eigen #chatBtn{display:none!important}
-body.eigen #chatBtn,body.eigen [data-act=plCanva],body.eigen [data-act=plExp]{display:none!important}
+body.noai [data-act=gAsk],body.noai [data-act=gemaAI],body.noai [data-act=liedAI],body.noai [data-act=pressAI],body.noai [data-act=memoAuto],body.noai [data-act=instr],body.nomic [data-act=micToggle],body.nomic [data-q=sprach]{display:none!important}
+body.eigen [data-act=plCanva],body.eigen [data-act=plExp]{display:none!important}
 .xbtn{width:36px;height:36px;border:0;background:none;color:inherit;opacity:.55;font-size:24px;line-height:1;border-radius:50%;cursor:pointer;flex:none}.xbtn:hover,.xbtn:active{opacity:1;background:rgba(128,128,128,.18)}
 .tdayw{max-width:640px;margin:0 auto}.tdnav{display:flex;align-items:center;gap:8px;margin:0 0 12px}.tdnav strong{flex:1;text-align:center;font-size:17px}.tdnav .btn{min-width:44px;justify-content:center}.tdnav .btn[disabled]{opacity:.35}.tdsec{margin-bottom:14px}.tdsec h3{display:flex;align-items:center;gap:8px;margin:0 0 4px;font:600 13.5px Inter,sans-serif;color:var(--mut);text-transform:none}.tdsec h3 i{font:500 12px Inter,sans-serif;font-style:normal;background:var(--bS);border-radius:999px;padding:0 7px}.tdsec .tgrp{margin:0 0 4px}
+.wu{padding:10px 12px;border-radius:10px;background:var(--bS,rgba(128,128,128,.12));margin-bottom:8px}.wu p{margin:0 0 4px}.wu small{color:var(--mut)}.wu.done{opacity:.6}.wu .note{margin:6px 0 0}
 /* Stift */
 .padbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:10px}
 .pad{width:100%;height:min(60vh,520px);border:1px solid var(--line);border-radius:10px;background:#fff repeating-linear-gradient(#fff 0 31px,#e3e7ea 31px 32px);touch-action:none;display:block}
@@ -647,6 +648,7 @@ function subscribe(){
  on('anhang',l=>ANH=l.sort((a,b)=>(b.ts||0)-(a.ts||0)));
  on('zeiten',l=>ZEIT=l);
  on('auslagen',l=>AUSL=l);
+ on('wuensche',l=>{WUN=l.sort((a,b)=>(b.ts||0)-(a.ts||0));if(!$('#dlg').hidden&&$('#dlgBody .wun'))wunschList()});
  on('plakate',l=>PLAK=l.sort((a,b)=>(b.datum||'').localeCompare(a.datum||'')||(b.ts||0)-(a.ts||0)));
  on('reisen',l=>REISEN=l.sort((a,b)=>(a.von||'9').localeCompare(b.von||'9')));
  on('kollegen',l=>KOLL=l.sort((a,b)=>(a.name||'').localeCompare(b.name||'')));
@@ -1206,6 +1208,7 @@ function optView(){const K=K_();return`<div class="top"><div><h1>${K?'Maschinenr
  <section class="card"><h2>Einrichten</h2><p class="note" style="margin:0 0 6px">Was man selten braucht, an einer Stelle.</p>${[['ensNew','Ensemble anlegen',ENS.length+' vorhanden'],['gremNew','Gremium anlegen',GREM.length+' vorhanden'],['fzEdit','Fahrzeug und Anfangsstand',SET.fahrzeug?.modell||'noch nicht eingetragen'],['vTpl','Vertragsvorlage',SET.vertrag?.vorlage?'eigene Vorlage hinterlegt':'mitgeliefertes Gerüst'],['verteiler','Presseverteiler',(String(SET.presse?.kontakte||'').split('\n').filter(x=>x.trim()).length||'keine')+' Kontakte'],['liedImport','Liedliste einfügen',LIEDER.length+' Lieder im Verzeichnis']].map(([a,t,n])=>`<div class="optrow"><div><strong>${t}</strong><p class="note">${esc(String(n))}</p></div><button class="btn" data-act="${a}">Öffnen</button></div>`).join('')}</section>
  </div><div class="col">
  
+ <section class="card"><h2>Wunschbox</h2><p style="margin-top:0">Ideen, Fehler und Wünsche zur App hier ablegen.</p><div class="acts links"><button type="button" class="btn" data-act="wunBox">Wunschbox öffnen${WUN.filter(w=>w.status!=='erledigt').length?` <span class="cnt">${WUN.filter(w=>w.status!=='erledigt').length}</span>`:''}</button></div></section>
  <section class="card"><h2>Datensicherung</h2><p style="margin-top:0">Alle eingetragenen Daten als Text kopieren oder eine kopierte Sicherung wieder einspielen.</p><div class="acts links"><button class="btn" data-act="backup">Sicherung kopieren</button><button class="btn" data-act="restore">Sicherung einspielen</button></div><p class="note">Angehängte Bilder und Scans sind in der Sicherung nicht enthalten.</p></section>
  </div></div>`}
 
@@ -1335,7 +1338,7 @@ const assetUrl=a=>a.url||('/_blob/'+a.asset);
   DICT.onState(({state})=>{micOn=state==='listening';document.querySelectorAll('.micb').forEach(b=>{b.classList.toggle('on',micOn);b.querySelector('span').textContent=micOn?'Stopp':'Sprechen'});if(!micOn){const p=$('#cpart');if(p)p.textContent=''}})}
  render()})();
 addEventListener('pointerdown',()=>{if(view==='konsole')play('kanal')},{once:true,capture:true});
-$('#chatBtn')?.addEventListener('click',()=>play('kanal'));
+$('#chatBtn')?.addEventListener('click',ev=>{if(document.body.classList.contains('eigen')){ev.preventDefault();wunschBox()}else play('kanal')});
 function micToggle(){if(!DICT){toast('Zum Diktieren die Mikrofontaste der Tastatur nutzen.');return}
  if(micOn){DICT.stop().catch(()=>{});return}
  play('kanal');DICT.start().catch(e=>toast(e?.code==='not_granted'?'Mikrofon ist nicht erlaubt.':'Das Mikrofon ließ sich nicht starten.'))}
@@ -1763,7 +1766,7 @@ function pzWidgetPush(){const nat=window.__twNat;if(!nat||!nat.setWidget)return;
 setInterval(pzWidgetPush,60000);
 setTimeout(async()=>{try{const i=await window.__twNat?.launchInfo?.();if(i?.pz)window.__pzDo(i.pz)}catch{}},3500);
 /* Eigene Fassung (Firebase/APK): was dort noch nicht angebunden ist, wird ausgeblendet statt mit Fehlermeldung zu antworten */
-(()=>{let n=0;const iv=setInterval(()=>{n++;if(mcp?.todoist){clearInterval(iv);setTimeout(()=>{document.body.classList.add('eigen');{let k=0;const sv=setInterval(()=>{if(++k>100||(seedOk.e&&seedOk.g)){clearInterval(sv);seedFirst()}},3000)}if(!SAMPLE)document.body.classList.add('noai');if(!DICT)document.body.classList.add('nomic')},1500)}else if(n>40)clearInterval(iv)},500)})();
+(()=>{let n=0;const iv=setInterval(()=>{n++;if(mcp?.todoist){clearInterval(iv);setTimeout(()=>{document.body.classList.add('eigen');{const c=$('#chatBtn');c.hidden=false;c.removeAttribute('href');c.setAttribute('role','button');c.tabIndex=0;c.title='Wunschbox';c.setAttribute('aria-label','Wunschbox öffnen')}{let k=0;const sv=setInterval(()=>{if(++k>100||(seedOk.e&&seedOk.g)){clearInterval(sv);seedFirst()}},3000)}if(!SAMPLE)document.body.classList.add('noai');if(!DICT)document.body.classList.add('nomic')},1500)}else if(n>40)clearInterval(iv)},500)})();
 REG.push((b,id)=>({fSkip:async()=>{const skip=[...(SET.fahrt?.skip||[]),id].slice(-200);SET.fahrt={...SET.fahrt,skip};render();await saveSet('fahrt',{skip});toast('Vorschlag ausgeblendet')}}));
 REG.push(()=>({untEdit:()=>openDlg('Orgelschüler im Kalender',area('n','Vornamen, mit Komma getrennt',untNamen(),3)+`<p class="note">Steht einer dieser Namen im Titel eines Termins, wird er als Unterricht einsortiert, im Kalender und als Vorschlag bei der Arbeitszeit.${untLearned().length?' Aus dem Kalender gelernt, weil dort „Unterricht“ oder „Prüfung“ daneben steht: '+esc(untLearned().join(', '))+'.':''}</p>`,async()=>{await saveSet('unt',{namen:fv('n')});closeDlg();render()})}));
 REG.push((b,id)=>({startPick:()=>startPick(),stMove:()=>{const i=+id,j=i+ +b.dataset.d;if(j<0||j>=stO.length)return;[stO[i],stO[j]]=[stO[j],stO[i]];startPickBody()},stTgl:()=>{stA=b.checked?stA.filter(k=>k!==id):stA.concat(id)}}));
@@ -1771,6 +1774,11 @@ function startPickBody(){$('#dlgBody').innerHTML=`<p class="note" style="margin-
 document.addEventListener('change',ev=>{const c=ev.target.closest('input[data-act=stTgl]');if(c)stA=c.checked?stA.filter(k=>k!==c.dataset.id):stA.includes(c.dataset.id)?stA:stA.concat(c.dataset.id)});
 /* ===== Plakate: Galerie, Druckdateien, Canva. Große Dateien liegen in Google Drive ===== */
 let PLAK=[],plakBusy='';
+let WUN=[];
+function wunschRows(){return WUN.length?WUN.map(w=>`<div class="wu ${w.status==='erledigt'?'done':''}"><p>${esc(w.text||'').replace(/\n/g,'<br>')}</p><small>${esc(dshort(new Date(w.ts||Date.now())))} · ${w.status==='erledigt'?'erledigt':w.status==='arbeit'?'in Arbeit':'offen'}${w.status==='erledigt'?'':` · <button type="button" class="lnk" data-act="wunDel" data-id="${esc(w.id)}">zurückziehen</button>`}</small>${w.antwort?`<p class="note">${esc(w.antwort)}</p>`:''}</div>`).join(''):'<p class="empty">Noch keine Wünsche.</p>'}
+function wunschList(){const el=$('#dlgBody .wun');if(el)el.innerHTML=wunschRows()}
+function wunschBox(){openDlg('Wunschbox',area('wtext','Was soll die App können, was stört, was fehlt?','',4,'z. B. Im Kalender die Woche mit Montag beginnen')+`<p class="note">Melanie sieht deine Wünsche und setzt sie mit Claude um.</p><h3 style="margin:14px 0 6px">Bisherige Wünsche</h3><div class="wun">${wunschRows()}</div>`,async()=>{const text=fv('wtext');if(!text){toast('Bitte erst etwas eintragen.');return}if(await save('wuensche',uid(),{text,ts:Date.now(),status:'offen',wo:cur})){toast('Wunsch abgelegt');wunschBox()}},'Ablegen')}
+REG.push((b,id)=>({wunBox:wunschBox,wunDel:async()=>{await remove('wuensche',id)}}));
 const DRV=()=>({an:true,ab:3,...(SET.drive||{})});
 const b64=blob=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]||'');r.onerror=rej;r.readAsDataURL(blob)});
 const drvId=p=>p?.id||p?.fileId||p?.file?.id||(JSON.stringify(p||'').match(/"id"\s*:\s*"([\w-]{20,})"/)||[])[1]||'';
