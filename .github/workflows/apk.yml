@@ -43,9 +43,11 @@ jobs:
       - name: APK ablegen
         run: |
           APK=app-android/android/app/build/outputs/apk/release/app-release.apk
-          B=gs://journal-70fbc.firebasestorage.app/sys/android
-          gcloud storage cp "$APK" "$B/Prinzipal-$TW_VERSION_CODE.apk"
-          gcloud storage cp "$APK" "$B/Prinzipal-aktuell.apk"
+          TOKEN="$(gcloud auth print-access-token)"
+          for N in "Prinzipal-$TW_VERSION_CODE.apk" "Prinzipal-aktuell.apk"; do
+            curl -sS --fail-with-body -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/vnd.android.package-archive" \
+              --data-binary @"$APK" "https://storage.googleapis.com/upload/storage/v1/b/journal-70fbc.firebasestorage.app/o?uploadType=media&name=sys%2Fandroid%2F$N" > /dev/null
+          done
           cp "$APK" public/Prinzipal.apk
           echo "::notice title=APK::Prinzipal-$TW_VERSION_CODE.apk"
       - name: Download-Link aktualisieren
