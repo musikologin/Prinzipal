@@ -8,7 +8,6 @@
 - Gmail-Label in die Ablage übernehmen.
 - Geburtstage importieren, Müllkalender.
 - Fahrtenbuch mit der Drive-Automatik verbinden.
-- Stimmton und Metronom, Tastenkürzel.
 - Bereiche für Kasualien und Orgelunterricht.
 - Notenleser, Orgelgrafik.
 - Widget: Aktionen ohne Öffnen der App.
