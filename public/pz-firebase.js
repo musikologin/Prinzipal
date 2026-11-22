@@ -190,7 +190,7 @@ async function nativeSignIn(silent) {
   twDiag("angemeldet");
   return c;
 }
-/* Kleine Statuszeile in der Android-App, solange etwas hakt (verschwindet nach dem Start) */
+/* Protokoll der Android-App: bei Fehlern still in pz_sys/diag abgelegt, nichts auf dem Bildschirm */
 const TW_LOG = [];
 function twDiag(m, isErr) {
   TW_LOG.push(new Date().toISOString().slice(11, 19) + " " + m); console[isErr ? "warn" : "log"]("[tw]", m);
@@ -199,12 +199,9 @@ function twDiag(m, isErr) {
   twDiag.err = true; if (twDiag.t) return;
   twDiag.t = setTimeout(() => {
     twDiag.t = 0; if (!twDiag.err) return;
-    const put = () => {
-      let el = document.getElementById("tw-diag");
-      if (!el) { el = document.createElement("div"); el.id = "tw-diag"; el.style.cssText = "position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:2147483600;background:rgba(59,42,32,.92);color:#fffaf2;font:12px/1.35 system-ui,sans-serif;padding:8px 10px;border-radius:10px;max-height:30vh;overflow:auto;white-space:pre-wrap"; el.onclick = () => { el.remove(); twDiag.err = false; }; document.body.appendChild(el); }
-      el.textContent = TW_LOG.slice(-12).join("\n") + "\n(Antippen schließt)";
-    };
-    document.body ? put() : addEventListener("DOMContentLoaded", put);
+    /* Nichts einblenden: das Protokoll still ablegen, damit es bei der Fehlersuche gelesen werden kann */
+    try { const u = auth.currentUser; if (u) setDoc(doc(fs, `users/${u.uid}/pz_sys/diag`), { log: TW_LOG.slice(-40), t: serverTimestamp(), ua: navigator.userAgent }).catch(() => {}); } catch (e) {}
+    twDiag.err = false;
   }, 8000);
 }
 window.__twDiag = twDiag;
