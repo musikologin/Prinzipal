@@ -26,7 +26,7 @@ Sebastians Daten: Firestore `users/<uid>/pz_<sammlung>/<id>` als `{j: JSON-Text,
 Dateien in Storage `users/<uid>/pz_a/<id>`. Die Zugriffsregeln liegen nicht in diesem Repository.
 
 Wunschbox: Sebastians Wünsche liegen in der Sammlung `wuensche` (`{text, ts, status: offen|arbeit|erledigt, antwort, wo}`).
-Nach dem Umsetzen `status` auf `erledigt` setzen und in `antwort` kurz sagen, was sich geändert hat.
+Die Wunschbox liest und bearbeitet Melanie mit ihrem Claude, nicht Sebastians Claude. Hier nichts daran ändern oder abhaken.
 
 ## Veröffentlichen
 
