@@ -61,7 +61,7 @@ export function todoistTools({ fs, uid }) {
     connect, connected: async () => { try { await getKey(); return true; } catch (e) { return false; } },
     tools: {
       "Todoist/find-projects": async () => ({ projects: (await all("/projects")).filter(p => !p.is_archived).map(p => ({ id: p.id, name: p.name, color: p.color, isFavorite: !!p.is_favorite, parentId: p.parent_id, inboxProject: !!p.inbox_project })) }),
-      "Todoist/find-tasks": async a => ({ tasks: (await all("/tasks" + (a.projectId ? "?project_id=" + encodeURIComponent(a.projectId) : ""))).map(conv) }),
+      "Todoist/find-tasks": async a => ({ tasks: (await all("/tasks" + (a.projectId ? "?project_id=" + encodeURIComponent(a.projectId) : a.labels && a.labels[0] ? "?label=" + encodeURIComponent(a.labels[0]) : ""))).map(conv) }),
       "Todoist/complete-tasks": async a => { const ids = a.ids || []; for (const id of ids) await call("POST", "/tasks/" + encodeURIComponent(id) + "/close"); return { completed: ids }; },
       "Todoist/add-tasks": async a => {
         const out = [];
