@@ -27,6 +27,8 @@ Dateien in Storage `users/<uid>/pz_a/<id>`. Die Zugriffsregeln liegen nicht in d
 
 Wunschbox: Sebastians Wünsche liegen in der Sammlung `wuensche` (`{text, ts, status: offen|arbeit|erledigt, antwort, wo}`).
 Die Wunschbox liest und bearbeitet Melanie mit ihrem Claude, nicht Sebastians Claude. Hier nichts daran ändern oder abhaken.
+Knopf „Bescheid geben“ (Einstellungen, nur Android-App): startet Melanies geplanten Auftrag „Prinzipal: Wunschbox prüfen“.
+Adresse und Schlüssel dafür stehen nur in Sebastians Einstellungen (`settings/wunsch`), nie im Code und nicht in der Sicherung.
 
 ## Veröffentlichen
 

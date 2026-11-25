@@ -1371,7 +1371,7 @@ function optView(){const K=K_();return`<div class="top"><div><h1>${K?'Maschinenr
  </div><div class="col">
  
  <section class="card"><h2>Werkzeuge</h2><div class="acts links"><button type="button" class="btn" data-act="toolDlg">Stimmgabel & Metronom</button><button type="button" class="btn" data-act="keysDlg">Tastenkürzel</button></div></section>
- <section class="card"><h2>Wunschbox</h2><p style="margin-top:0">Ideen, Fehler und Wünsche zur App hier ablegen.</p><div class="acts links"><button type="button" class="btn" data-act="wunBox">Wunschbox öffnen${WUN.filter(w=>w.status!=='erledigt').length?` <span class="cnt">${WUN.filter(w=>w.status!=='erledigt').length}</span>`:''}</button></div></section>
+ <section class="card"><h2>Wunschbox</h2><p style="margin-top:0">Ideen, Fehler und Wünsche zur App hier ablegen.</p><div class="acts links"><button type="button" class="btn" data-act="wunBox">Wunschbox öffnen${WUN.filter(w=>w.status!=='erledigt').length?` <span class="cnt">${WUN.filter(w=>w.status!=='erledigt').length}</span>`:''}</button></div>${wunRufHtml()}</section>
  <section class="card"><h2>Datensicherung</h2><p style="margin-top:0">Alle eingetragenen Daten als Text kopieren oder eine kopierte Sicherung wieder einspielen.</p><div class="acts links"><button class="btn" data-act="backup">Sicherung kopieren</button><button class="btn" data-act="restore">Sicherung einspielen</button></div><p class="note">Angehängte Bilder und Scans sind in der Sicherung nicht enthalten.</p></section>
  </div></div>`}
 
@@ -1386,7 +1386,7 @@ REG.push((b,id)=>{const n=NOTEN.find(x=>x.id===id),k=KUE.find(x=>x.id===id),e=ev
   pressOpen:()=>{selPress=id;play('tap');render()},pressBack:()=>{selPress=null;render()},evOpenP:()=>go('veranst','ev',id),pressAI:()=>pressAI(e,b.dataset.k),pressEdit:()=>pressEdit(e,b.dataset.k),
   pressCopy:async()=>{try{await navigator.clipboard.writeText(PRESS[id]?.texte?.[b.dataset.k]||'');toast('Kopiert')}catch{toast('Kopieren nicht möglich')}},fristNew:()=>fristForm(e),fristStd:()=>fristStd(e),spiegelNew:()=>spiegelForm(e),verteiler:verteilerForm,
   toggleView:()=>$('#viewBtn').click(),toggleSound:()=>{sound=!sound;store.set('sound',sound);render()},
-  backup:async()=>{const data=JSON.stringify({stand:new Date().toISOString(),ensembles:ENS,gremien:GREM,veranstaltungen:VER,noten:NOTEN,kuenstler:KUE,presse:PRESS,handschrift:HAND,anhang:ANH,fahrten:FAHRTEN,umfragen:UMFR,lieder:LIEDER,zeiten:ZEIT,auslagen:AUSL,reisen:REISEN,kollegen:KOLL,plakate:PLAK,einstellungen:SET},null,1);try{await navigator.clipboard.writeText(data);toast('Sicherung kopiert ('+Math.round(data.length/1024)+' KB)')}catch{toast('Kopieren nicht möglich')}}}});
+  backup:async()=>{const data=JSON.stringify({stand:new Date().toISOString(),ensembles:ENS,gremien:GREM,veranstaltungen:VER,noten:NOTEN,kuenstler:KUE,presse:PRESS,handschrift:HAND,anhang:ANH,fahrten:FAHRTEN,umfragen:UMFR,lieder:LIEDER,zeiten:ZEIT,auslagen:AUSL,reisen:REISEN,kollegen:KOLL,plakate:PLAK,einstellungen:{...SET,wunsch:undefined}},null,1);try{await navigator.clipboard.writeText(data);toast('Sicherung kopiert ('+Math.round(data.length/1024)+' KB)')}catch{toast('Kopieren nicht möglich')}}}});
 document.addEventListener('change',async ev=>{const t=ev.target;
  if(t.dataset.act==='loanBack'&&t.checked){const n=NOTEN.find(x=>x.id===t.dataset.id);const d=clean({...n,ausleihen:n.ausleihen.map(a=>a.id===t.dataset.l?{...a,zurueck:today()}:a)});delete d.id;await save('noten',n.id,d)}
  if(t.dataset.act==='fristChk'){const e=events.find(x=>x.id===t.dataset.id);const d=pressBase(e);d.fristen=d.fristen.map((f,i)=>i===+t.dataset.i?{...f,done:t.checked}:f);await save('presse',e.id,d)}});
@@ -1945,6 +1945,25 @@ function wunschRows(){return WUN.length?WUN.map(w=>`<div class="wu ${w.status===
 function wunschList(){const el=$('#dlgBody .wun');if(el)el.innerHTML=wunschRows()}
 function wunschBox(){openDlg('Wunschbox',area('wtext','Was soll die App können, was stört, was fehlt?','',4,'z. B. Im Kalender die Woche mit Montag beginnen')+`<p class="note">Melanie sieht deine Wünsche und setzt sie mit Claude um.</p><h3 style="margin:14px 0 6px">Bisherige Wünsche</h3><div class="wun">${wunschRows()}</div>`,async()=>{const text=fv('wtext');if(!text){toast('Bitte erst etwas eintragen.');return}if(await save('wuensche',uid(),{text,ts:Date.now(),status:'offen',wo:cur})){toast('Wunsch abgelegt');wunschBox()}},'Ablegen')}
 REG.push((b,id)=>({wunBox:wunschBox,wunDel:async()=>{await remove('wuensche',id)}}));
+/* Wunschbox: Melanie auf Knopfdruck Bescheid geben. Nur in der Android-App, der Browser darf die Adresse nicht aufrufen.
+   Adresse und Schlüssel stehen nur in den eigenen Einstellungen (settings/wunsch), nie im Code und nicht in der Sicherung. */
+const WUN_URL=/^https:\/\/api\.anthropic\.com\/v1\/claude_code\/routines\/[A-Za-z0-9_-]+\/fire$/;
+function wunNat(){const C=window.Capacitor;return window.__twNat&&C?C:null}
+function wunPost(o){const C=wunNat();if(!C)return Promise.reject(new Error('nur in der App'));if(typeof C.nativePromise==='function')return C.nativePromise('CapacitorHttp','post',o);const P=C.Plugins?.CapacitorHttp;return P?.post?P.post(o):Promise.reject(new Error('Brücke fehlt'))}
+function wunRufHtml(){if(!wunNat())return'';const w=SET.wunsch||{};return w.url&&w.key?`<div class="optrow"><div><strong>Melanie Bescheid geben</strong><p class="note">Sie erfährt gleich, dass neue Wünsche in der Box liegen.</p></div><button type="button" class="btn" data-act="wunRuf">Bescheid geben</button></div><p class="note"><button type="button" class="lnk" data-act="wunKey">Schlüssel ändern</button></p>`:`<div class="optrow"><div><strong>Melanie Bescheid geben</strong><p class="note">Dafür fehlt noch der Schlüssel, den du von Melanie bekommst.</p></div><button type="button" class="btn" data-act="wunKey">Schlüssel eintragen</button></div>`}
+function wunKeyForm(){const w=SET.wunsch||{};openDlg('Schlüssel für die Wunschbox',`<p class="note" style="margin-top:0">Beides bekommst du von Melanie. Damit meldest du ihr auf Knopfdruck, dass neue Wünsche in der Box liegen.</p>`+fld('wurl','Adresse',w.url||'','url','https://api.anthropic.com/…/fire')+fld('wkey','Schlüssel','','password',w.key?'gespeichert – leer lassen, um ihn zu behalten':'')+(w.key?`<p class="note"><button type="button" class="lnk" data-act="wunKeyDel">Schlüssel entfernen</button></p>`:''),async()=>{const url=fv('wurl'),key=fv('wkey')||w.key||'';if(!WUN_URL.test(url)){toast('Die Adresse stimmt nicht. Bitte genau so einfügen, wie Melanie sie geschickt hat.');return}if(!key){toast('Bitte den Schlüssel einfügen.');return}if(await saveSet('wunsch',{url,key})){closeDlg();render();toast('Schlüssel gespeichert')}})}
+let wunBusy=false;
+async function wunRuf(){const w=SET.wunsch||{};if(!w.url||!w.key){wunKeyForm();return}
+ if(wunBusy)return;
+ if(!WUN.some(x=>x.status!=='erledigt'&&x.gemeldet!==true)){toast('In der Box liegt kein neuer Wunsch.');return}
+ if(Date.now()-(w.zuletzt||0)<5*60000){toast('Melanie hat gerade erst Bescheid bekommen.');return}
+ wunBusy=true;toast('Einen Moment …');
+ try{const r=await wunPost({url:w.url,headers:{Authorization:'Bearer '+w.key,'anthropic-version':'2023-06-01','anthropic-beta':'experimental-cc-routine-2026-04-01','Content-Type':'application/json'},data:{},connectTimeout:15000,readTimeout:30000}),s=+r?.status;
+  if(s>=200&&s<300){await saveSet('wunsch',{zuletzt:Date.now()});toast('Melanie bekommt Bescheid.')}
+  else toast(s===401?'Der Schlüssel stimmt nicht mehr. Bitte Melanie um einen neuen.':s===429?'Zu oft hintereinander. Bitte später noch einmal.':'Das hat nicht geklappt (Fehler '+(s||'?')+'). Bitte sag Melanie direkt Bescheid.')}
+ catch{toast('Keine Verbindung. Bitte später noch einmal.')}
+ wunBusy=false}
+REG.push(()=>({wunRuf,wunKey:wunKeyForm,wunKeyDel:async()=>{if(await saveSet('wunsch',{url:'',key:''})){closeDlg();render();toast('Schlüssel entfernt')}}}));
 const DRV=()=>({an:true,ab:3,...(SET.drive||{})});
 const b64=blob=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]||'');r.onerror=rej;r.readAsDataURL(blob)});
 const drvId=p=>p?.id||p?.fileId||p?.file?.id||(JSON.stringify(p||'').match(/"id"\s*:\s*"([\w-]{20,})"/)||[])[1]||'';
