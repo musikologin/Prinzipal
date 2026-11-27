@@ -25,7 +25,9 @@ Firebase-Projekt `journal-70fbc` (gehört Melanie, enthält auch ihre eigenen Ap
 Sebastians Daten: Firestore `users/<uid>/pz_<sammlung>/<id>` als `{j: JSON-Text, t}`,
 Dateien in Storage `users/<uid>/pz_a/<id>`. Die Zugriffsregeln liegen nicht in diesem Repository.
 
-Wunschbox: Sebastians Wünsche liegen in der Sammlung `wuensche` (`{text, ts, status: offen|arbeit|erledigt, antwort, wo}`).
+Wunschbox: Sebastians Wünsche liegen in der Sammlung `wuensche` (`{text, ts, status: offen|arbeit|erledigt, antwort, wo, gemeldet, dateien}`).
+Anhänge eines Wunsches: `dateien: [{name, type, size, asset}]`, die Datei selbst liegt in Storage `users/<uid>/pz_a/<asset>`
+(immer in der App, nie in Google Drive; höchstens 5 je Wunsch, je 20 MB). „Zurückziehen“ löscht die Dateien mit.
 Die Wunschbox liest und bearbeitet Melanie mit ihrem Claude, nicht Sebastians Claude. Hier nichts daran ändern oder abhaken.
 Knopf „Bescheid geben“ (Einstellungen, nur Android-App): startet Melanies geplanten Auftrag „Prinzipal: Wunschbox prüfen“.
 Adresse und Schlüssel dafür stehen nur in Sebastians Einstellungen (`settings/wunsch`), nie im Code und nicht in der Sicherung.
